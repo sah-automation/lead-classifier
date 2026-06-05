@@ -1,0 +1,191 @@
+{
+  "name": "Lead Classification",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1GBk1GHIZJv34U_Q3dHceD6dbGU29h00wo_UWANvR6lQ",
+          "mode": "list",
+          "cachedResultName": "Lead Classifier",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GBk1GHIZJv34U_Q3dHceD6dbGU29h00wo_UWANvR6lQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GBk1GHIZJv34U_Q3dHceD6dbGU29h00wo_UWANvR6lQ/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        32
+      ],
+      "id": "2bd0b856-998c-4c85-b578-db90185971e6",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "3zzkxDYbtfRsvsdm",
+          "name": "Google Sheets Trigger"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        688,
+        144
+      ],
+      "id": "8b86117f-f7ae-46c2-b885-928f8beab74b",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "27b5ad5d-43f5-47b9-bb52-5e9c86c4f95c",
+              "leftValue": "={{ $json.classification }}",
+              "rightValue": "Hot",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        432,
+        32
+      ],
+      "id": "a503ab85-c577-416c-a663-b05ce203ba54",
+      "name": "If Hot Lead"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://danille-nonprotrusive-steve.ngrok-free.dev/lead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"{{ $json.Name }}\",\n  \"email\": \"{{ $json.Email }}\",\n  \"phone\": \"{{ $json.Phone }}\",\n  \"message\": \"{{ $json.Message }}\",\n  \"source\": \"{{ $json.Source }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        32
+      ],
+      "id": "c940bc77-f537-4369-8529-118df595368f",
+      "name": "Post New Lead with FastAPI"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AJMC3PB7Z",
+          "mode": "list",
+          "cachedResultName": "general"
+        },
+        "text": "New Hot Lead Entry. Please reply as soon as possible.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        688,
+        -80
+      ],
+      "id": "22747b1c-88a4-4d25-9830-1c2ab64a3544",
+      "name": "Notify for Quick Action",
+      "webhookId": "0f28c0c9-5286-49ef-84fc-3921fc0e52d9",
+      "credentials": {
+        "slackApi": {
+          "id": "4qvC7OnRRv7VPzVg",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Post New Lead with FastAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Hot Lead": {
+      "main": [
+        [
+          {
+            "node": "Notify for Quick Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post New Lead with FastAPI": {
+      "main": [
+        [
+          {
+            "node": "If Hot Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "72effb6b-4fcf-4f6c-8362-d89603e056a4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37ee74431af36e5f6e2177b0b6e0ba77f82f98e5f13559f1dbfcc6190c6b5601"
+  },
+  "id": "IdPTLzvdnihFotzB",
+  "tags": []
+}

@@ -1,0 +1,6 @@
+﻿# Core
+fastapi==0.136.1
+uvicorn[standard]==0.47.0
+google-generativeai
+pydantic==2.13.4
+python-dotenv==1.1.0
